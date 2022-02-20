@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
+import { addItemsInfo } from '../../redux/actions/itemsActions';
 import s from './ContactForm.module.css';
 
-export default function ContactForm({ onSubmit }) {
+const ContactForm = () => {
   const [name, SetName] = useState('');
   const [number, SetNumber] = useState('');
+
+  const contacts = useSelector(state => state.contacts.items);
+  const dispatch = useDispatch();
 
   const handleChange = event => {
     const { name, value } = event.target;
@@ -21,9 +26,28 @@ export default function ContactForm({ onSubmit }) {
     }
   };
 
+  const addContact = dataContact => {
+    const DoubleContact = contacts.find(
+      contact => contact.name.toLocaleLowerCase() === dataContact.name.toLocaleLowerCase(),
+    );
+
+    if (DoubleContact !== undefined) {
+      alert(`${DoubleContact.name} is already in contacts.`);
+      return;
+    }
+    const contactNew = {
+      id: uuidv4(),
+      name: dataContact.name,
+      number: dataContact.number,
+    };
+
+    dispatch(addItemsInfo(contactNew));
+  };
+
   const HandleSubmit = event => {
     event.preventDefault();
-    onSubmit({ name, number });
+    addContact({ name, number });
+
     SetName('');
     SetNumber('');
   };
@@ -62,6 +86,6 @@ export default function ContactForm({ onSubmit }) {
       </button>
     </form>
   );
-}
+};
 
-ContactForm.propTypes = { onSubmit: PropTypes.func.isRequired };
+export default ContactForm;
